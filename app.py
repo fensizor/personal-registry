@@ -2,14 +2,16 @@ import boto3
 import time
 import docker
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-aws_access_key = os.environ['AWS_ACCESS_KEY']
-aws_secret_key = os.environ['AWS_SECRET_KEY']
+aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 aws_region = 'eu-west-1'
 
-dockerhub_username = os.environ['DOCKERHUB_USERNAME']
-dockerhub_password = os.environ['DOCKERHUB_PASSWORD']
+dockerhub_username = os.getenv('DOCKERHUB_USERNAME')
+dockerhub_password = os.getenv('DOCKERHUB_PASSWORD')
 
 ec2 = boto3.resource(
     'ec2',
@@ -19,12 +21,12 @@ ec2 = boto3.resource(
 )
 
 instance = ec2.create_instances(
-    ImageId='ami-0eb260c4d5475b901',
+    ImageId='ami-01dd271720c1ba44f',
     InstanceType='t2.micro',
     MinCount=1,
     MaxCount=1,
-    KeyName='key-pair',
-    SecurityGroupIds=['default'],
+    KeyName='ubuntu',
+    SecurityGroupIds=['python'],
     UserData='''#!/bin/bash
                 apt-get update -y
                 apt-get upgrade -y
@@ -41,8 +43,22 @@ instance[0].reload()
 instance_ip = instance[0].public_ip_address
 print(f"Instance is running at IP: {instance_ip}")
 
-instance_ip = instance[0].public_ip_address
 docker_client = docker.DockerClient(base_url=f"tcp://{instance_ip}:2375")
+
+image_to_pull = input("Enter the Docker image name (e.g., nginx:latest): ")
+
+client = docker.from_env()
+client.login(username=dockerhub_username, password=dockerhub_password)
+
+client.images.pull(image_to_pull)
+
+new_image_tag = f"{instance_ip}:5000/my-registry/{image_to_pull.split(':')[0]}"
+client.images.get(image_to_pull).tag(new_image_tag)
+client.images.push(new_image_tag)
+
+print(f"Image '{new_image_tag}' pushed to the registry.")
+
+
 
 registry_images = docker_client.images.list()
 print("Images in the registry:")
