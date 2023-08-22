@@ -45,7 +45,7 @@ print(f"Instance is running at IP: {instance_ip}")
 
 docker_client = docker.DockerClient(base_url=f"tcp://{instance_ip}:2375")
 
-image_to_pull = input("Enter the Docker image name (e.g., nginx:latest): ")
+image_to_pull = input("Enter the Docker image name: ")
 
 client = docker.from_env()
 client.login(username=dockerhub_username, password=dockerhub_password)
