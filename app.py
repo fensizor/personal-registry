@@ -4,12 +4,12 @@ import docker
 import os
 
 
-aws_access_key = 'AWS_ACCESS_KEY'
-aws_secret_key = 'AWS_SECRET_KEY'
+aws_access_key = os.environ['AWS_ACCESS_KEY']
+aws_secret_key = os.environ['AWS_SECRET_KEY']
 aws_region = 'eu-west-1'
 
-dockerhub_username = 'DOCKERHUB_USERNAME'
-dockerhub_password = 'DOCKERHUB_PASSWORD'
+dockerhub_username = os.environ['DOCKERHUB_USERNAME']
+dockerhub_password = os.environ['DOCKERHUB_PASSWORD']
 
 ec2 = boto3.resource(
     'ec2',
